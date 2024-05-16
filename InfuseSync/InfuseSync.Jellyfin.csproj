@@ -7,7 +7,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyVersion>1.4.2</AssemblyVersion>
     <FileVersion>1.4.2</FileVersion>
     <RootNamespace>InfuseSync</RootNamespace>

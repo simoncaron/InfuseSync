@@ -6,7 +6,6 @@ using System.Threading;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Model.Entities;
 using InfuseSync.Models;
 
@@ -16,12 +15,13 @@ using ILogger = MediaBrowser.Model.Logging.ILogger;
 #else
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using ILogger = Microsoft.Extensions.Logging.ILogger<InfuseSync.EntryPoints.UserSyncManager>;
 #endif
 
 namespace InfuseSync.EntryPoints
 {
-    public class UserSyncManager : IServerEntryPoint
+    public class UserSyncManager : IHostedService
     {
         private readonly ILogger _logger;
         private readonly IUserDataManager _userDataManager;
@@ -46,11 +46,18 @@ namespace InfuseSync.EntryPoints
             _userDataManager.UserDataSaved += UserDataSaved;
         }
 #else
-        public Task RunAsync()
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             _userDataManager.UserDataSaved += UserDataSaved;
             return Task.CompletedTask;
         }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _userDataManager.UserDataSaved -= UserDataSaved;
+            return Task.CompletedTask;
+        }
+
 #endif
 
         void UserDataSaved(object sender, UserDataSaveEventArgs e)

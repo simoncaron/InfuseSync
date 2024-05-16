@@ -5,7 +5,6 @@ using System.Threading;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Plugins;
 using InfuseSync.Models;
 
 #if EMBY
@@ -14,12 +13,13 @@ using ILogger = MediaBrowser.Model.Logging.ILogger;
 #else
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using ILogger = Microsoft.Extensions.Logging.ILogger<InfuseSync.EntryPoints.LibrarySyncManager>;
 #endif
 
 namespace InfuseSync.EntryPoints
 {
-    public class LibrarySyncManager: IServerEntryPoint
+    public class LibrarySyncManager: IHostedService
     {
         private readonly ILibraryManager _libraryManager;
         private readonly ILogger _logger;
@@ -45,7 +45,7 @@ namespace InfuseSync.EntryPoints
             _libraryManager.ItemRemoved += ItemRemoved;
         }
 #else
-        public Task RunAsync()
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             _libraryManager.ItemAdded += ItemUpdated;
             _libraryManager.ItemUpdated += ItemUpdated;
@@ -53,6 +53,16 @@ namespace InfuseSync.EntryPoints
 
             return Task.CompletedTask;
         }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _libraryManager.ItemAdded -= ItemUpdated;
+            _libraryManager.ItemUpdated -= ItemUpdated;
+            _libraryManager.ItemRemoved -= ItemRemoved;
+
+            return Task.CompletedTask;
+        }
+
 #endif
 
         void ItemUpdated(object sender, ItemChangeEventArgs e)
